@@ -1,6 +1,5 @@
 import logging
 from aiogram import Bot, Dispatcher, types
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.filters import Command
@@ -11,25 +10,29 @@ from weather_analyze import get_location_key_by_name, get_weather_parameters, ge
 TELEGRAM_BOT_TOKEN = "8035942674:AAHj-Q8ngroe-eTTrIZ0Ew4bSS5xfYbfCaw"
 ACCUWEATHER_API_KEY = "ipvOK5aENc4Y8kCd9gBug5u6NIk1ADZq"
 
+# конфигурация бота
 logging.basicConfig(level=logging.INFO)
 bot = Bot(token=TELEGRAM_BOT_TOKEN)
 dp = Dispatcher(storage=MemoryStorage())
 
+# глобальные переменные для сохранения маршрута пользователя
 user_routes = {}
 user_intervals = {}
 
 TIMEOUT = 10  # Тайм-аут в секундах для асинхронных вызовов
 
+# обработка команды \start
 @dp.message(Command("start"))
 async def send_welcome(message: types.Message):
     await message.reply(
         "Привет! Я weather bot.\n\n"
-        "Я помогу тебе узнать погоду на маршруте на заданный промежуток времени. \n"
+        "Я помогу вам узнать погоду на маршруте на заданный промежуток времени. \n"
         "Команды: \n"
         "/weather - Узнать прогноз погоды для маршрута\n"
         "/help - Список команд\n"
     )
 
+# обработка команды \help
 @dp.message(Command("help"))
 async def send_help(message: types.Message):
     await message.reply(
@@ -39,6 +42,7 @@ async def send_help(message: types.Message):
         "/help - Список команд"
     )
 
+# обработка команды \weather и получение временного интервала
 @dp.message(Command('weather'))
 async def weather_start(message: types.Message):
     user_routes[message.chat.id] = []
@@ -48,6 +52,7 @@ async def weather_start(message: types.Message):
     keyboard.adjust(1)
     await message.reply("Выберите временной интервал прогноза погоды:", reply_markup=keyboard.as_markup())
 
+# обработка временного интервала
 @dp.callback_query(lambda c: c.data.startswith("interval_"))
 async def process_time_interval(callback_query: types.CallbackQuery):
     user_id = callback_query.message.chat.id
@@ -56,6 +61,7 @@ async def process_time_interval(callback_query: types.CallbackQuery):
     await bot.send_message(user_id, f"Вы выбрали прогноз на {interval} дней.")
     await bot.send_message(user_id, "Введите начальную точку маршрута (город):")
 
+# принимает сообщение с городом
 @dp.message()
 async def process_city(message: types.Message):
     user_id = message.chat.id
@@ -77,6 +83,7 @@ async def process_city(message: types.Message):
         keyboard.adjust(1)
         await message.reply("Хотите добавить остановку или подтвердить маршрут?", reply_markup=keyboard.as_markup())
 
+# обработка добавления остановки или окончания маршрута
 @dp.callback_query(lambda c: c.data in ["add_stop", "confirm_route"])
 async def process_route_actions(callback_query: types.CallbackQuery):
     user_id = callback_query.message.chat.id
@@ -92,6 +99,7 @@ async def process_route_actions(callback_query: types.CallbackQuery):
             await bot.send_message(user_id, f"Ваш маршрут: {', '.join(route)}")
             await send_weather_forecast(user_id, route, interval)
 
+# запрос прогноза погоды
 async def send_weather_forecast(user_id, route, interval):
     try:
         forecast_results = []
@@ -128,6 +136,7 @@ async def send_weather_forecast(user_id, route, interval):
     except Exception as e:
         await bot.send_message(user_id, f"Ошибка при получении прогноза: {str(e)}")
 
+# запуск бота
 if __name__ == "__main__":
     async def main():
         await dp.start_polling(bot)
