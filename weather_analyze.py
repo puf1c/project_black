@@ -102,47 +102,10 @@ def get_weather_forecast(api_key, location_key, days):
                 "max_temperature": daily_forecast["Temperature"]["Maximum"]["Value"],
                 "min_temperature": daily_forecast["Temperature"]["Minimum"]["Value"],
                 "precipitation_sum": daily_forecast.get("Day", {}).get("PrecipitationProbability", 0),
-                "windspeed": daily_forecast.get("Day", {}).get("Wind", {}).get("Speed", {}).get("Value", 0),
+                "wind_speed": daily_forecast.get("Day", {}).get("Wind", {}).get("Speed", {}).get("Value", 0),
             })
 
         return forecast
 
     except Exception as e:
         return None
-
-# ОБЯЗАТЕЛЬНО К ЗАПОЛНЕНИЮ
-YANDEX_API_KEY = "ваш ключ для яндекс геокодера"
-YANDEX_GEOCODER_URL = "https://geocode-maps.yandex.ru/1.x/"
-
-
-def get_coordinates(city_name):
-    try:
-        params = {
-            "apikey": YANDEX_API_KEY,
-            "geocode": city_name,
-            "format": "json",
-        }
-        response = requests.get(YANDEX_GEOCODER_URL, params=params)
-        response.raise_for_status()
-
-        data = response.json()
-        geo_object = (
-            data.get("response", {})
-            .get("GeoObjectCollection", {})
-            .get("featureMember", [{}])[0]
-            .get("GeoObject", {})
-        )
-
-        if not geo_object:
-            raise ValueError(f"Город '{city_name}' не найден. Проверьте правильность написания.")
-
-        coordinates = geo_object.get("Point", {}).get("pos", "")
-        if not coordinates:
-            raise ValueError(f"Не удалось получить координаты для города '{city_name}'.")
-
-        lon, lat = map(float, coordinates.split(" "))
-        return lat, lon
-    except requests.RequestException as e:
-        raise ValueError(f"Ошибка подключения: {str(e)}")
-    except Exception as e:
-        raise ValueError(f"Ошибка при обработке '{city_name}': {str(e)}")
