@@ -7,8 +7,8 @@ import asyncio
 from weather_analyze import get_location_key_by_name, get_weather_parameters, get_weather_forecast
 
 # ОБЯЗАТЕЛЬНО ЗАПОЛНИТЬ
-TELEGRAM_BOT_TOKEN = "8035942674:AAHj-Q8ngroe-eTTrIZ0Ew4bSS5xfYbfCaw"
-ACCUWEATHER_API_KEY = "ipvOK5aENc4Y8kCd9gBug5u6NIk1ADZq"
+TELEGRAM_BOT_TOKEN = "ваш телеграм токен"
+ACCUWEATHER_API_KEY = "ваш ключ от accuweather"
 
 # конфигурация бота
 logging.basicConfig(level=logging.INFO)
